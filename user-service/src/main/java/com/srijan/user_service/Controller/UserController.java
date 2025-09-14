@@ -1,5 +1,6 @@
 package com.srijan.user_service.Controller;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.srijan.user_service.Model.User;
 import com.srijan.user_service.Model.UserInfoDTO;
 import com.srijan.user_service.Service.UserService;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 @RestController
 @RequestMapping("/user")
@@ -46,6 +49,7 @@ public class UserController {
 
     //get all users
     @GetMapping("/allUsers")
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "getAllUsersFallback")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers();
         if (users != null) {
@@ -53,6 +57,11 @@ public class UserController {
         }
         return ResponseEntity.notFound().build();
     }
+    public ResponseEntity<List<User>> getAllUsersFallback(Throwable throwable) {
+        System.out.println("Fallback method called due to: " + throwable.getMessage());
+        return ResponseEntity.ok(Collections.emptyList());
+    }
+
     //get user by id
     @GetMapping("/getUserByName/{name}")
     public ResponseEntity<User> getUserByName(@PathVariable String name) {
