@@ -17,11 +17,19 @@ public class UserService {
     
     //register one user
     public User registerUser(User user) {
+        if(userRepository.findByName(user.getName()).isPresent()) {
+            throw new IllegalArgumentException("User already exists");
+        }
         return userRepository.save(user);
     }
     
     //register multiple users
     public List<User> registerUsers(List<User> users) {
+        for(User user : users) {
+            if(userRepository.findByName(user.getName()).isPresent()) {
+                throw new IllegalArgumentException("User already exists");
+            }
+        }
         return userRepository.saveAll(users);
     }
     
@@ -33,14 +41,14 @@ public class UserService {
 
     //get user by name
     public User getUserByName(String name) {
-        return userRepository.findByName(name).orElse(null);
+        return userRepository.findByName(name).orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
     //get user by id
     public User getUserById(int id) {
-        return userRepository.findById(id).orElse(null);
+        return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
     public String getUserName(int id) {
-        User user = userRepository.findById(id).orElse(null);
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
         if (user != null) {
             return user.getName();
         }
@@ -50,7 +58,7 @@ public class UserService {
 
     //update user by name
     public User updateUser(String name, User user) {
-        User existingUser = userRepository.findByName(name).orElse(null);
+        User existingUser = userRepository.findByName(name).orElseThrow(() -> new IllegalArgumentException("User not found"));
         if (existingUser != null) {
             existingUser.setName(user.getName());
             existingUser.setEmail(user.getEmail());
@@ -86,7 +94,7 @@ public class UserService {
 
     //get user info by id
     public UserInfoDTO getUserInfoById(int id) {
-        User user = userRepository.findById(id).orElse(null);
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
         if (user != null) {
             return new UserInfoDTO(user.getName(), user.getPhone(), user.getEmail());
         }

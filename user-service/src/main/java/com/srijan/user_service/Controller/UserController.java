@@ -29,18 +29,24 @@ public class UserController {
 
     //create user
     @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestBody User user) {
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "registerUserFallback")
+    public ResponseEntity<String> registerUser(@RequestBody User user) {
         User registeredUser = userService.registerUser(user);
         if (registeredUser != null) {
-            return ResponseEntity.ok(registeredUser);
+            return ResponseEntity.ok("Welcome to Expense Distributer " + registeredUser.getName());
         }
         return ResponseEntity.notFound().build();
     }
+    public ResponseEntity<String> registerUserFallback(Throwable throwable) {
+        System.out.println("Fallback method called due to: " + throwable.getMessage());
+        return ResponseEntity.ok("User registration failed " + throwable.getMessage());
+    }
     @PostMapping("/registerUsers")
-    public ResponseEntity<List<User>> registerUsers(@RequestBody List<User> users) {
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "registerUserFallback")
+    public ResponseEntity<String> registerUsers(@RequestBody List<User> users) {
         List<User> registeredUsers = userService.registerUsers(users);
         if (registeredUsers != null) {
-            return ResponseEntity.ok(registeredUsers);
+            return ResponseEntity.ok("Users registered successfully");
         }
         return ResponseEntity.notFound().build();
     }
@@ -64,6 +70,7 @@ public class UserController {
 
     //get user by id
     @GetMapping("/getUserByName/{name}")
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "getUserByNameFallback")
     public ResponseEntity<User> getUserByName(@PathVariable String name) {
         User user = userService.getUserByName(name);
         if (user != null) {
@@ -71,8 +78,14 @@ public class UserController {
         }
         return ResponseEntity.notFound().build();
     }
+    public ResponseEntity<String> getUserByNameFallback(String name, Throwable throwable) {
+        System.out.println("Fallback method called due to: " + throwable.getMessage());
+        return ResponseEntity.ok("No user found with name: " + name);
+    }
+
     //get user by id
     @GetMapping("/getUserById/{id}")
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "getUserByIdFallback")
     public ResponseEntity<User> getUserById(@PathVariable int id) {
         User user = userService.getUserById(id);
         if (user != null) {
@@ -82,6 +95,7 @@ public class UserController {
     }
     //gets user name by id
     @GetMapping("/getUserName/{id}")
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "getUserByIdFallback")
     public ResponseEntity<String> getUserName(@PathVariable int id) {
         String name = userService.getUserName(id);
         if (name != null) {
@@ -89,10 +103,15 @@ public class UserController {
         }
         return ResponseEntity.notFound().build();
     }
+    public ResponseEntity<String> getUserByIdFallback(int id, Throwable throwable) {
+        System.out.println("Fallback method called due to: " + throwable.getMessage());
+        return ResponseEntity.ok("No user found with id: " + id);
+    }
 
 
     //update user
     @PutMapping("/updateUser/{name}")
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "getUserByNameFallback")
     public ResponseEntity<User> updateUser(@PathVariable String name, @RequestBody User user) {
         User updatedUser = userService.updateUser(name, user);
         if (updatedUser != null) {
@@ -102,6 +121,7 @@ public class UserController {
     }
     //update user by id
     @PutMapping("/updateUserById/{id}")
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "getUserByIdFallback")
     public ResponseEntity<User> updateUserById(@PathVariable int id, @RequestBody User user) {
         User updatedUser = userService.updateUserById(id, user);
         if (updatedUser != null) {
@@ -114,6 +134,7 @@ public class UserController {
     
     //delete user by name
     @DeleteMapping("/deleteUser/{name}")
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "getUserByNameFallback")
     public ResponseEntity<String> deleteUser(@PathVariable String name) {
         User user = userService.getUserByName(name);
         if (user != null) {
@@ -124,6 +145,7 @@ public class UserController {
     }
     //delete user by id
     @DeleteMapping("/deleteUserById/{id}")
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "getUserByIdFallback")
     public ResponseEntity<String> deleteUserById(@PathVariable int id) {
         User user = userService.getUserById(id);
         if (user != null) {
@@ -135,6 +157,7 @@ public class UserController {
 
 
     @GetMapping("/UserDetails/{id}")
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "getUserByIdFallback")
     public ResponseEntity<UserInfoDTO> getUserInfo(@PathVariable int id) {
         UserInfoDTO userInfoDTO = userService.getUserInfoById(id);
         if (userInfoDTO != null) {

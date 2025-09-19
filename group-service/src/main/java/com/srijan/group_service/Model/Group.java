@@ -22,7 +22,7 @@ public class Group {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id")
+    @Column(name="group_id")
     private Integer groupId;
     private String name;
     @ElementCollection

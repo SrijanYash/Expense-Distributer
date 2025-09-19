@@ -11,5 +11,6 @@ public class UserInfoDTO {
 
     private String name;
     private Long phone;
+    private String email;
 
 }
