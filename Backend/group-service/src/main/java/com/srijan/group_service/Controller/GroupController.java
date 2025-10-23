@@ -16,6 +16,8 @@ import com.srijan.group_service.Model.Group;
 import com.srijan.group_service.Model.GroupAndUserWrapper;
 import com.srijan.group_service.Service.GroupService;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
 @RestController
 @RequestMapping("/group")
 public class GroupController {
@@ -25,8 +27,12 @@ public class GroupController {
 
     // Create a new group
     @PostMapping("/createGroup")
+    @CircuitBreaker(name = "GroupBreaker", fallbackMethod = "createGroupFallback")
     public ResponseEntity<Group> createGroup(@RequestBody Group group) {
         return ResponseEntity.ok(groupService.createGroup(group));
+    }
+    public ResponseEntity<Group> createGroupFallback(Group group, Throwable throwable){
+        return ResponseEntity.ok(group);
     }
     @PostMapping("/{userId}/UserGroupView/{groupId}")
     public ResponseEntity<String> createUserGroupView(@PathVariable int userId, @PathVariable int groupId) {
