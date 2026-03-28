@@ -95,6 +95,8 @@ public class GroupService {
         return groupAndUserWrapper;
     }
 
-
+    public List<Group> getGroupsForUser(Integer userId) {
+        return groupRepository.findByUserIdsContaining(userId);
+    }
 
 }

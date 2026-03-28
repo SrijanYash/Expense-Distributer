@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import apiService from '../services/apiService';
+import authService from '../services/authService';
 
 function HomePage() {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [groups, setGroups] = useState([]);
+  const navigate = useNavigate();
   
-  // Mock user ID for demonstration - would come from auth in real app
-  const currentUserId = 1;
+  // Get user ID from auth service
+  const currentUserId = authService.getUserId();
 
   useEffect(() => {
     // Fetch user's expenses
@@ -29,13 +33,94 @@ function HomePage() {
     fetchUserExpenses();
   }, [currentUserId]);
 
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const res = await apiService.getUserById(currentUserId);
+        setCurrentUser(res.data);
+      } catch (err) {
+        console.error('Failed to load user details', err);
+      }
+    };
+    if (currentUserId) {
+      fetchUserDetails();
+    }
+  }, [currentUserId]);
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const res = await apiService.getUserGroups(currentUserId);
+        setGroups(res.data);
+      } catch (err) {
+        console.error('Failed to load groups', err);
+      }
+    };
+    if (currentUserId) {
+      fetchGroups();
+    }
+  }, [currentUserId]);
+
+  useEffect(() => {
+    if (groups.length === 0 && expenses.length > 0) {
+      const uniq = [];
+      const seen = new Set();
+      for (const exp of expenses) {
+        const key = `${exp.groupId}|${exp.groupName || 'Unknown Group'}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          uniq.push({ groupId: exp.groupId, name: exp.groupName || 'Unknown Group' });
+        }
+      }
+      setGroups(uniq);
+    }
+  }, [expenses, groups]);
+  
+  const handleLogout = async () => {
+    try {
+      // Call logout API
+      await apiService.logout();
+      // Clear user session
+      authService.clearUserSession();
+      // Redirect to login page
+      navigate('/login');
+    } catch (err) {
+      console.error('Logout error:', err);
+      // Even if API fails, clear local session
+      authService.clearUserSession();
+      navigate('/login');
+    }
+  };
+
   return (
-    <>
+    <div className="home-container">
       <Sidebar />
       <div className="main-content">
-        <div className="page-header">
+        <div className="header">
           <h1 className="page-title">My Expenses</h1>
-          <button className="btn btn-primary">Add New Expense</button>
+          <div className="user-info">
+            {currentUser ? (
+              <span>Welcome, {currentUser.name}</span>
+            ) : (
+              <span>Welcome</span>
+            )}
+          </div>
+          <button className="logout-button" onClick={handleLogout}>Logout</button>
+        </div>
+
+        <div className="groups-section">
+          <h2>My Groups</h2>
+          {groups.length === 0 ? (
+            <p className="no-groups">No groups found</p>
+          ) : (
+            <ul className="group-list">
+              {groups.map((group) => (
+                <li key={group.groupId}>
+                  <Link to={`/group/${group.groupId}`}>{group.name}</Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {loading ? (
@@ -65,7 +150,7 @@ function HomePage() {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
 

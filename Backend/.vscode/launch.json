@@ -1,0 +1,75 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Eureka Server",
+      "request": "launch",
+      "mainClass": "com.example.eurekademo.EurekaDemoApplication",
+      "projectName": "eureka-demo",
+      "cwd": "${workspaceFolder}/eureka-demo"
+    },
+    {
+      "type": "java",
+      "name": "API Service",
+      "request": "launch",
+      "mainClass": "com.example.apiservice.ApiServiceApplication",
+      "projectName": "api-service",
+      "cwd": "${workspaceFolder}/api-service"
+    },
+    {
+      "type": "java",
+      "name": "User Service",
+      "request": "launch",
+      "mainClass": "com.example.userservice.UserServiceApplication",
+      "projectName": "user-service",
+      "cwd": "${workspaceFolder}/user-service"
+    },
+    {
+      "type": "java",
+      "name": "Group Service",
+      "request": "launch",
+      "mainClass": "com.example.groupservice.GroupServiceApplication",
+      "projectName": "group-service",
+      "cwd": "${workspaceFolder}/group-service"
+    },
+    {
+      "type": "java",
+      "name": "Expense Service",
+      "request": "launch",
+      "mainClass": "com.example.expenceservice.ExpenceServiceApplication",
+      "projectName": "expence-service",
+      "cwd": "${workspaceFolder}/expence-service"
+    },
+    {
+      "type": "java",
+      "name": "User-Group Service",
+      "request": "launch",
+      "mainClass": "com.example.usergroupservice.UserGroupServiceApplication",
+      "projectName": "user-group-service",
+      "cwd": "${workspaceFolder}/user-group-service"
+    },
+    {
+      "type": "java",
+      "name": "Launch All Services",
+      "request": "launch",
+      "mainClass": "",
+      "projectName": "",
+      "preLaunchTask": "Launch All Backend Services"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Launch All Backend Services",
+      "configurations": [
+        "Eureka Server",
+        "API Service",
+        "User Service",
+        "Group Service",
+        "Expense Service",
+        "User-Group Service"
+      ],
+      "stopAll": true
+    }
+  ]
+}

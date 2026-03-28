@@ -1,6 +1,30 @@
+/**
+ * @module apiService
+ * @description This file contains Axios-based API service functions for interacting with backend services.
+ * Axios is a promise-based HTTP client for the browser and Node.js, providing a simple and flexible API for making HTTP requests.
+ * 
+ * Key Features:
+ * - Base URL configuration: All Axios instances are configured with a base URL for consistent API calls.
+ * - Default headers setup: Headers like Content-Type can be set globally for all requests.
+ * - Interceptors: Allows handling of requests and responses, enabling features like authentication token management and error handling.
+ * - Error handling mechanisms: Centralized error handling ensures consistent behavior across all API calls.
+ * 
+ * Usage Examples:
+ * - GET: `apiService.getUsers()`
+ * - POST: `apiService.addUser(userData)`
+ * - PUT: `apiService.updateExpense(id, expenseData)`
+ * - DELETE: Not implemented in this file but can be added similarly.
+ * 
+ * Benefits of Centralized API Service Pattern:
+ * - Consistent error handling across all API calls.
+ * - Request/response transformation for uniform data handling.
+ * - Authentication token management for secure API access.
+ * - Single point of configuration for easier maintenance and updates.
+ */
+
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = 'http://localhost:8085';
 
 // Create axios instances for different services
 const userService = axios.create({
@@ -16,22 +40,28 @@ const expenseService = axios.create({
 });
 
 const userGroupService = axios.create({
-  baseURL: `${API_BASE_URL}/userGroup`
+  baseURL: `${API_BASE_URL}/user-group`
 });
 
 // API service methods
 const apiService = {
+  // Authentication endpoints
+  login: (username) => userService.get(`/getUserByName/${username}`),
+  logout: () => userService.post('/logout'),
+  
   // User endpoints
   getUsers: () => userService.get('/getUsers'),
-  getUserById: (id) => userService.get(`/getUser/${id}`),
+  getUserById: (id) => userService.get(`/getUserById/${id}`),
   addUser: (userData) => userService.post('/addUser', userData),
+  registerUser: (userData) => userService.post('/register', userData),
   addFriend: (friendData) => userService.post('/addUser', friendData),
   
   // Group endpoints
   getGroups: () => groupService.get('/getGroups'),
-  getGroupById: (id) => groupService.get(`/getGroup/${id}`),
+  getGroupById: (id) => groupService.get(`/GetGroup/${id}`),
   addGroup: (groupData) => groupService.post('/addGroup', groupData),
   createGroup: (groupData) => groupService.post('/addGroup', groupData),
+  getUserIdsInGroup: (groupId) => groupService.get(`/${groupId}/ListOfUsers`),
   
   // Expense endpoints
   getExpenseById: (id) => expenseService.get(`/getExpence/${id}`),
@@ -42,7 +72,9 @@ const apiService = {
   updateExpense: (id, expenseData) => expenseService.put(`/updateExpence/${id}`, expenseData),
   
   // User-Group endpoints
-  getUserGroups: (userId) => userGroupService.get(`/getUserGroups/${userId}`),
+  getUserGroupView: (userId, groupId) => userGroupService.get(`/userId-${userId}/groupId-${groupId}`),
+  getGroupUserViewList: (groupId) => userGroupService.get(`/groupId-${groupId}/getGroupUserView`),
+  getUserGroups: (userId) => groupService.get(`/User/${userId}/Groups`),
   
   // Mock endpoints for demonstration (would be replaced with actual endpoints)
   getUserExpenses: (userId) => {

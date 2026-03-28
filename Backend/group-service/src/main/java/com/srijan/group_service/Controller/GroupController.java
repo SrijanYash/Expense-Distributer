@@ -71,4 +71,9 @@ public class GroupController {
         return ResponseEntity.ok(groupService.getUsersInGroupWrapper(givenGroupId));
     }
 
+    @GetMapping("/User/{userId}/Groups")
+    public ResponseEntity<List<Group>> getGroupsForUser(@PathVariable("userId") Integer userId){
+        return ResponseEntity.ok(groupService.getGroupsForUser(userId));
+    }
+
 }
