@@ -5,8 +5,12 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.srijan.user_service.Model.Friend;
+import com.srijan.user_service.Model.Invitation;
 import com.srijan.user_service.Model.User;
 import com.srijan.user_service.Model.UserInfoDTO;
+import com.srijan.user_service.Repository.FriendRepository;
+import com.srijan.user_service.Repository.InvitationRepository;
 import com.srijan.user_service.Repository.UserRepository;
 
 @Service
@@ -14,11 +18,29 @@ public class UserService {
     
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private FriendRepository friendRepository;
+
+    @Autowired
+    private InvitationRepository invitationRepository;
+
+    @Autowired
+    private org.springframework.beans.factory.ObjectProvider<org.springframework.mail.javamail.JavaMailSender> mailSenderProvider;
     
     //register one user
     public User registerUser(User user) {
-        if(userRepository.findByName(user.getName()).isPresent()) {
+        if (user == null) {
+            throw new IllegalArgumentException("Invalid user");
+        }
+        if (user.getName() != null && userRepository.findByName(user.getName()).isPresent()) {
             throw new IllegalArgumentException("User already exists");
+        }
+        if (user.getEmail() != null && userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("User already exists");
+        }
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            user.setPassword("123456");
         }
         return userRepository.save(user);
     }
@@ -101,7 +123,119 @@ public class UserService {
         return null;
     }
 
+    //authenticate login by name or email and password
+    public boolean authenticate(User loginUser) {
+        if (loginUser == null) {
+            return false;
+        }
+        String password = loginUser.getPassword();
+        if (password == null) {
+            return false;
+        }
+        String email = loginUser.getEmail();
+        if (email != null && !email.isEmpty()) {
+            return userRepository.findByEmail(email)
+                    .map(u -> password.equals(u.getPassword()))
+                    .orElse(false);
+        }
+        String name = loginUser.getName();
+        if (name != null && !name.isEmpty()) {
+            return userRepository.findByName(name)
+                    .map(u -> password.equals(u.getPassword()))
+                    .orElse(false);
+        }
+        return false;
+    }
 
+    public User addFriend(int userId, String name, String email) {
+        if (email == null) {
+            throw new IllegalArgumentException("Email required");
+        }
+        String emailTrimmed = email.trim();
+        if (emailTrimmed.isEmpty()) {
+            throw new IllegalArgumentException("Email required");
+        }
+        User friendUser = userRepository.findByEmailIgnoreCase(emailTrimmed)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if (name != null && !name.trim().isEmpty()) {
+            if (!name.trim().equalsIgnoreCase(friendUser.getName())) {
+                throw new IllegalArgumentException("Name does not match");
+            }
+        }
+        if (friendUser.getId() == userId) {
+            throw new IllegalArgumentException("Cannot add yourself");
+        }
+        if (!friendRepository.existsByUserIdAndFriendId(userId, friendUser.getId())) {
+            friendRepository.save(new Friend(userId, friendUser.getId()));
+        }
+        if (!friendRepository.existsByUserIdAndFriendId(friendUser.getId(), userId)) {
+            friendRepository.save(new Friend(friendUser.getId(), userId));
+        }
+        return friendUser;
+    }
 
+    public List<User> getFriends(int userId) {
+        return userRepository.findFriendsForUser(userId);
+    }
 
+    public void removeFriend(int userId, int friendId) {
+        friendRepository.deleteByUserIdAndFriendId(userId, friendId);
+    }
+
+    public User inviteFriend(int userId, String name, String email) {
+        if (email == null) {
+            throw new IllegalArgumentException("Email required");
+        }
+        String emailTrimmed = email.trim();
+        if (emailTrimmed.isEmpty()) {
+            throw new IllegalArgumentException("Email required");
+        }
+        String nameTrimmed = name == null ? "" : name.trim();
+        User friendUser = userRepository.findByEmailIgnoreCase(emailTrimmed).orElse(null);
+        if (friendUser == null) {
+            User newUser = new User();
+            newUser.setName(nameTrimmed);
+            newUser.setEmail(emailTrimmed);
+            newUser.setPassword("123456");
+            friendUser = userRepository.save(newUser);
+            String token = java.util.UUID.randomUUID().toString();
+            Invitation inv = new Invitation();
+            inv.setUserId(friendUser.getId());
+            inv.setEmail(emailTrimmed);
+            inv.setToken(token);
+            inv.setStatus("PENDING");
+            inv.setExpiresAt(java.time.Instant.now().plus(java.time.Duration.ofDays(2)));
+            invitationRepository.save(inv);
+            try {
+                org.springframework.mail.javamail.JavaMailSender sender = mailSenderProvider.getIfAvailable();
+                if (sender != null) {
+                    jakarta.mail.internet.MimeMessage message = sender.createMimeMessage();
+                    org.springframework.mail.javamail.MimeMessageHelper helper = new org.springframework.mail.javamail.MimeMessageHelper(message, true);
+                    helper.setTo(emailTrimmed);
+                    helper.setSubject("Confirm your Expense Distributer account");
+                    String link = "http://localhost:3000/register?token=" + token;
+                    helper.setText("Hello " + nameTrimmed + ", please confirm your account by clicking: " + link, false);
+                    sender.send(message);
+                }
+            } catch (Exception ignored) {}
+        } else {
+            if (!nameTrimmed.isEmpty() && !nameTrimmed.equalsIgnoreCase(friendUser.getName())) {
+                throw new IllegalArgumentException("Name does not match");
+            }
+        }
+        if (friendUser.getId() == userId) {
+            throw new IllegalArgumentException("Cannot add yourself");
+        }
+        if (!friendRepository.existsByUserIdAndFriendId(userId, friendUser.getId())) {
+            friendRepository.save(new Friend(userId, friendUser.getId()));
+        }
+        return friendUser;
+    }
+
+    public String confirmRegistration(String token) {
+        Invitation inv = invitationRepository.findByToken(token).orElseThrow(() -> new IllegalArgumentException("Invalid token"));
+        inv.setStatus("CONFIRMED");
+        invitationRepository.save(inv);
+        return "Confirmed";
+    }
 }

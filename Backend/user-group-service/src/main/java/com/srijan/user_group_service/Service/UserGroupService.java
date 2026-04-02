@@ -73,7 +73,7 @@ public class UserGroupService {
     }
 
     public UserGroupView getUserGroupView(int userId, int groupId) {
-        return userGroupViewRepository.findByUserIdAndGroupId(userId, groupId);
+        return userGroupViewRepository.findTopByUserIdAndGroupIdOrderByIdDesc(userId, groupId);
     }
     public List<UserGroupView> getGroupUserView(int groupId) {
         return userGroupViewRepository.findByGroupId(groupId);

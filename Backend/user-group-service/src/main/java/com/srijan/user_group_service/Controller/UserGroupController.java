@@ -24,7 +24,7 @@ public class UserGroupController {
     //create a user group view
     @PostMapping("/{userId}/NewUserGroupView/{groupId}")
     public void createUserGroupView(@PathVariable int userId, @PathVariable int groupId) {
-        userGroupService.createUserGroupView(userId, groupId);
+        userGroupService.createUserGroupView(groupId, userId);
     }
     @PostMapping("/{groupId}/NewUserGroupViews")
     public void createUserGroupViews(@PathVariable int groupId, @RequestBody List<Integer> userIds) {

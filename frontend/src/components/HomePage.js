@@ -61,20 +61,7 @@ function HomePage() {
     }
   }, [currentUserId]);
 
-  useEffect(() => {
-    if (groups.length === 0 && expenses.length > 0) {
-      const uniq = [];
-      const seen = new Set();
-      for (const exp of expenses) {
-        const key = `${exp.groupId}|${exp.groupName || 'Unknown Group'}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          uniq.push({ groupId: exp.groupId, name: exp.groupName || 'Unknown Group' });
-        }
-      }
-      setGroups(uniq);
-    }
-  }, [expenses, groups]);
+
   
   const handleLogout = async () => {
     try {

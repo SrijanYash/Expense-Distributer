@@ -30,7 +30,7 @@ public class UserGroupView {
     private String groupName;
     private String userName;
     private String userEmail;
-    private long userPhone;
+    private Long userPhone;
 
     @ElementCollection
     @CollectionTable(name = "gv-user_expenses", 

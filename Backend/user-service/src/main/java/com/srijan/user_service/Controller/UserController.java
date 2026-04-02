@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.srijan.user_service.Model.User;
@@ -27,6 +28,19 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @PostMapping("/login")
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "loginFallback")
+    public ResponseEntity<String> login(@RequestBody User user) {
+        boolean authenticated = userService.authenticate(user);
+        if (authenticated) {
+            return ResponseEntity.ok("Login successful");
+        }
+        return ResponseEntity.status(401).body("Invalid user");
+    }
+    public ResponseEntity<String> loginFallback(Throwable throwable) {
+        System.out.println("Fallback method called due to: " + throwable.getMessage());
+        return ResponseEntity.status(503).body("Login service unavailable");
+    }
     //create user
     @PostMapping("/register")
     @CircuitBreaker(name = "userBreaker", fallbackMethod = "registerUserFallback")
@@ -157,12 +171,60 @@ public class UserController {
 
 
     @GetMapping("/UserDetails/{id}")
-    @CircuitBreaker(name = "userBreaker", fallbackMethod = "getUserByIdFallback")
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "getUserInfoFallback")
     public ResponseEntity<UserInfoDTO> getUserInfo(@PathVariable int id) {
         UserInfoDTO userInfoDTO = userService.getUserInfoById(id);
         if (userInfoDTO != null) {
             return ResponseEntity.ok(userInfoDTO);
         }
         return ResponseEntity.notFound().build();
+    }
+    public ResponseEntity<UserInfoDTO> getUserInfoFallback(int id, Throwable throwable) {
+        return ResponseEntity.ok(new UserInfoDTO());
+    }
+
+    @GetMapping("/{userId}/friends")
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "getAllUsersFallback")
+    public ResponseEntity<List<User>> getFriends(@PathVariable int userId) {
+        List<User> users = userService.getFriends(userId);
+        if (users != null) {
+            return ResponseEntity.ok(users);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/{userId}/friends")
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "registerUserFallback")
+    public ResponseEntity<?> addFriend(@PathVariable int userId, @RequestBody User payload) {
+        try {
+            User friend = userService.addFriend(userId, payload.getName(), payload.getEmail());
+            return ResponseEntity.ok(friend);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{userId}/friends/{friendId}")
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "getUserByIdFallback")
+    public ResponseEntity<String> removeFriend(@PathVariable int userId, @PathVariable int friendId) {
+        userService.removeFriend(userId, friendId);
+        return ResponseEntity.ok("Friend removed");
+    }
+
+    @PostMapping("/{userId}/friends/invite")
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "registerUserFallback")
+    public ResponseEntity<?> inviteFriend(@PathVariable int userId, @RequestBody User payload) {
+        try {
+            User friend = userService.inviteFriend(userId, payload.getName(), payload.getEmail());
+            return ResponseEntity.ok(friend);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/confirm")
+    public ResponseEntity<String> confirm(@RequestParam("token") String token) {
+        String result = userService.confirmRegistration(token);
+        return ResponseEntity.ok(result);
     }
 }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import apiService from '../services/apiService';
 
-function CreateGroupModal({ onClose, onCreateGroup, friends }) {
+function CreateGroupModal({ onClose, onCreateGroup, friends, currentUserId }) {
   const [groupName, setGroupName] = useState('');
   const [selectedFriends, setSelectedFriends] = useState([]);
   const [error, setError] = useState('');
@@ -30,14 +30,13 @@ function CreateGroupModal({ onClose, onCreateGroup, friends }) {
     
     try {
       setLoading(true);
-      // Current user ID would come from auth in a real app
-      const currentUserId = 1;
+      const ownerId = Number(currentUserId);
       const groupData = {
         name: groupName,
-        userIds: [currentUserId, ...selectedFriends]
+        userIds: [ownerId, ...selectedFriends]
       };
       
-      const response = await apiService.addGroup(groupData);
+      const response = await apiService.createGroup(groupData);
       onCreateGroup(response.data);
       setLoading(false);
     } catch (err) {

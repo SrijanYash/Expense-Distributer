@@ -21,14 +21,23 @@ function AddExpensePage() {
   useEffect(() => {
     const loadMembers = async () => {
       try {
-        const res = await apiService.getGroupUserViewList(groupId);
-        const views = res.data || [];
-        const m = views.map(v => ({ id: v.userId, name: v.userName }));
+        const idsRes = await apiService.getUserIdsInGroup(groupId);
+        const ids = (idsRes.data || []).map(Number);
+        let res = await apiService.getGroupUserViewList(groupId);
+        let views = res.data || [];
+        if (views.length < ids.length) {
+          await apiService.createUserGroupViews(groupId, ids);
+          res = await apiService.getGroupUserViewList(groupId);
+          views = res.data || [];
+        }
+        const m = ids.map(uid => {
+          const v = views.find(vw => vw.userId === uid);
+          return { id: uid, name: v ? v.userName : authService.getUsername() };
+        });
         setMembers(m);
-        const ids = m.map(x => x.id);
         setUserIds(ids);
-        setPercentages(Array(ids.length).fill(0));
-        setAmounts(Array(ids.length).fill(0));
+        setPercentages(Array(m.length).fill(0));
+        setAmounts(Array(m.length).fill(0));
         const meId = Number(authService.getUserId());
         setPaidBy(ids.includes(meId) ? meId : (ids[0] || null));
       } catch (err) {

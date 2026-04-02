@@ -8,7 +8,7 @@ import com.srijan.user_group_service.Model.UserGroupView;
 
 public interface UserGroupViewRepository extends JpaRepository<UserGroupView, Integer>{
 
-    public UserGroupView findByUserIdAndGroupId(int userId, int groupId);
+    public UserGroupView findTopByUserIdAndGroupIdOrderByIdDesc(int userId, int groupId);
 
     public List<UserGroupView> findByGroupId(int groupId);
 

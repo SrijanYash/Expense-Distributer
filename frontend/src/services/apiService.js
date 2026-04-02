@@ -50,17 +50,21 @@ const apiService = {
   logout: () => userService.post('/logout'),
   
   // User endpoints
-  getUsers: () => userService.get('/getUsers'),
+  getUsers: () => userService.get('/allUsers'),
   getUserById: (id) => userService.get(`/getUserById/${id}`),
-  addUser: (userData) => userService.post('/addUser', userData),
+  addUser: (userData) => userService.post('/register', userData),
   registerUser: (userData) => userService.post('/register', userData),
-  addFriend: (friendData) => userService.post('/addUser', friendData),
+
+  // Friends endpoints
+  getFriends: (userId) => userService.get(`/${userId}/friends`),
+  addFriend: (userId, data) => userService.post(`/${userId}/friends`, data),
+  inviteFriend: (userId, data) => userService.post(`/${userId}/friends/invite`, data),
   
   // Group endpoints
   getGroups: () => groupService.get('/getGroups'),
-  getGroupById: (id) => groupService.get(`/GetGroup/${id}`),
-  addGroup: (groupData) => groupService.post('/addGroup', groupData),
-  createGroup: (groupData) => groupService.post('/addGroup', groupData),
+  getGroupById: (id) => groupService.get(`/${id}/GetGroup`),
+  addGroup: (groupData) => groupService.post('/createGroup', groupData),
+  createGroup: (groupData) => groupService.post('/createGroup', groupData),
   getUserIdsInGroup: (groupId) => groupService.get(`/${groupId}/ListOfUsers`),
   
   // Expense endpoints
@@ -74,6 +78,7 @@ const apiService = {
   // User-Group endpoints
   getUserGroupView: (userId, groupId) => userGroupService.get(`/userId-${userId}/groupId-${groupId}`),
   getGroupUserViewList: (groupId) => userGroupService.get(`/groupId-${groupId}/getGroupUserView`),
+  createUserGroupViews: (groupId, userIds) => userGroupService.post(`/${groupId}/NewUserGroupViews`, userIds),
   getUserGroups: (userId) => groupService.get(`/User/${userId}/Groups`),
   
   // Mock endpoints for demonstration (would be replaced with actual endpoints)

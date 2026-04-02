@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import apiService from '../services/apiService';
 import AddFriendModal from './AddFriendModal';
 import CreateGroupModal from './CreateGroupModal';
+import authService from '../services/authService';
 
 function Sidebar() {
   const [groups, setGroups] = useState([]);
@@ -12,8 +13,7 @@ function Sidebar() {
   const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
   const location = useLocation();
   
-  // Mock user ID for demonstration - would come from auth in real app
-  const currentUserId = 1;
+  const currentUserId = authService.getUserId();
 
   useEffect(() => {
     const fetchSidebarData = async () => {
@@ -23,9 +23,8 @@ function Sidebar() {
         setGroups(groupsResponse.data);
         
         // Fetch user's friends
-        const friendsResponse = await apiService.getUsers();
-        // Filter out current user from friends list
-        const filteredFriends = friendsResponse.data.filter(user => user.id !== currentUserId);
+        const friendsResponse = await apiService.getFriends(currentUserId);
+        const filteredFriends = friendsResponse.data.filter(user => user.id !== Number(currentUserId));
         setFriends(filteredFriends);
         
         setLoading(false);
@@ -98,10 +97,13 @@ function Sidebar() {
       {showAddFriendModal && (
         <AddFriendModal 
           onClose={() => setShowAddFriendModal(false)} 
-          onAddFriend={(newFriend) => {
-            setFriends([...friends, newFriend]);
+          onAddFriend={async () => {
+            const friendsResponse = await apiService.getFriends(currentUserId);
+            const filteredFriends = friendsResponse.data.filter(user => user.id !== Number(currentUserId));
+            setFriends(filteredFriends);
             setShowAddFriendModal(false);
           }}
+          currentUserId={currentUserId}
         />
       )}
       
@@ -112,6 +114,7 @@ function Sidebar() {
             setGroups([...groups, newGroup]);
             setShowCreateGroupModal(false);
           }}
+          currentUserId={currentUserId}
           friends={friends}
         />
       )}

@@ -1,42 +1,52 @@
 import React, { useState } from 'react';
 import apiService from '../services/apiService';
 
-function AddFriendModal({ onClose, onAddFriend }) {
+function AddFriendModal({ onClose, onAddFriend, currentUserId }) {
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
-    phone: '',
-    password: '123456' // Default password for simplicity
+    email: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [canInvite, setCanInvite] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: name === 'phone' ? value.replace(/\D/g, '') : value
+      [name]: value
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Basic validation
-    if (!formData.name || !formData.email || !formData.phone) {
-      setError('Please fill in all required fields');
+
+    const name = (formData.name || '').trim();
+    const email = (formData.email || '').trim();
+    if (!name || !email) {
+      setError('Please fill in name and email');
       return;
     }
-    
+
     try {
       setLoading(true);
-      const response = await apiService.addUser(formData);
-      onAddFriend(response.data);
-      setLoading(false);
+      await apiService.addFriend(currentUserId, { name, email });
+      onAddFriend();
     } catch (err) {
-      setError('Failed to add friend. Please try again.');
-      setLoading(false);
+      const data = err?.response?.data;
+      let msg = 'Failed to add friend. Please check the name matches the email and try again.';
+      if (typeof data === 'string') {
+        msg = data;
+      } else if (data && typeof data === 'object') {
+        msg = data.message || data.error || JSON.stringify(data);
+      } else if (err?.message) {
+        msg = err.message;
+      }
+      setError(msg);
+      setCanInvite(String(msg).toLowerCase().includes('user not found'));
       console.error('Error adding friend:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -77,21 +87,39 @@ function AddFriendModal({ onClose, onAddFriend }) {
             />
           </div>
           
-          <div className="form-group">
-            <label htmlFor="phone">Phone Number</label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="Enter friend's phone number"
-              required
-            />
-          </div>
           
           <div className="modal-actions">
             <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
+            {canInvite && (
+              <button type="button" className="btn btn-primary" disabled={loading}
+                onClick={async () => {
+                  const name = (formData.name || '').trim();
+                  const email = (formData.email || '').trim();
+                  if (!name || !email) {
+                    setError('Please fill in name and email');
+                    return;
+                  }
+                  try {
+                    setLoading(true);
+                    await apiService.inviteFriend(currentUserId, { name, email });
+                    setError('Invitation sent');
+                    setCanInvite(false);
+                    onAddFriend();
+                  } catch (err) {
+                    const data = err?.response?.data;
+                    let msg = 'Failed to invite friend.';
+                    if (typeof data === 'string') { msg = data; }
+                    else if (data && typeof data === 'object') { msg = data.message || data.error || JSON.stringify(data); }
+                    else if (err?.message) { msg = err.message; }
+                    setError(msg);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              >
+                {loading ? 'Inviting...' : 'Create & Invite'}
+              </button>
+            )}
             <button type="submit" className="btn btn-primary" disabled={loading}>
               {loading ? 'Adding...' : 'Add Friend'}
             </button>

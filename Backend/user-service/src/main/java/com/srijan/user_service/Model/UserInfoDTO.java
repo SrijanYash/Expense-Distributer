@@ -9,10 +9,10 @@ import lombok.NoArgsConstructor;
 public class UserInfoDTO {
 
     private String name;
-    private long phone;
+    private Long phone;
     private String email;
 
-    public UserInfoDTO(String name, long phone, String email) {
+    public UserInfoDTO(String name, Long phone, String email) {
         this.name = name;
         this.phone = phone;
         this.email = email;
