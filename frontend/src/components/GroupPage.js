@@ -11,7 +11,7 @@ function GroupPage() {
   const [userExpenses, setUserExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [userGroupView, setUserGroupView] = useState(null);
+  const [, setUserGroupView] = useState(null);
   const currentUserId = authService.getUserId();
 
   useEffect(() => {
