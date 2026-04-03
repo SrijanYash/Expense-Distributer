@@ -76,7 +76,7 @@ public class UserGroupService {
         return userGroupViewRepository.findTopByUserIdAndGroupIdOrderByIdDesc(userId, groupId);
     }
     public List<UserGroupView> getGroupUserView(int groupId) {
-        return userGroupViewRepository.findByGroupId(groupId);
+        return userGroupViewRepository.findLatestPerUserInGroup(groupId);
     }
     
     public List<Expence> getGroupLogs(int groupId) {
