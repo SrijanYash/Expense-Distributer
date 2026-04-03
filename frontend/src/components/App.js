@@ -18,7 +18,7 @@ function ProtectedRoute({ children }) {
 }
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
   
   useEffect(() => {
