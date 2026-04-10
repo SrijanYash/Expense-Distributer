@@ -79,6 +79,7 @@ const apiService = {
   getUserGroupView: (userId, groupId) => userGroupService.get(`/userId-${userId}/groupId-${groupId}`),
   getGroupUserViewList: (groupId) => userGroupService.get(`/groupId-${groupId}/getGroupUserView`),
   createUserGroupViews: (groupId, userIds) => userGroupService.post(`/${groupId}/NewUserGroupViews`, userIds),
+  getGroupMemberDetails: (groupId) => userGroupService.get(`/${groupId}/MemberDetails`),
   getUserGroups: (userId) => groupService.get(`/User/${userId}/Groups`),
   
   // Mock endpoints for demonstration (would be replaced with actual endpoints)

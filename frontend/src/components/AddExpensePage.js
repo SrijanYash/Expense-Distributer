@@ -21,25 +21,33 @@ function AddExpensePage() {
   useEffect(() => {
     const loadMembers = async () => {
       try {
-        const idsRes = await apiService.getUserIdsInGroup(groupId);
-        const ids = (idsRes.data || []).map(Number);
-        let res = await apiService.getGroupUserViewList(groupId);
-        let views = res.data || [];
-        if (views.length < ids.length) {
-          await apiService.createUserGroupViews(groupId, ids);
-          res = await apiService.getGroupUserViewList(groupId);
-          views = res.data || [];
+        // Prefer direct member details from user-group-service
+        const detRes = await apiService.getGroupMemberDetails(groupId);
+        let m = (detRes.data || []).map(x => ({ id: Number(x.id), name: x.name }));
+        // Fallback to legacy path if needed
+        if (!m.length) {
+          const idsRes = await apiService.getUserIdsInGroup(groupId);
+          const ids = (idsRes.data || []).map(Number);
+          let res = await apiService.getGroupUserViewList(groupId);
+          let views = res.data || [];
+          if (views.length < ids.length) {
+            await apiService.createUserGroupViews(groupId, ids);
+            res = await apiService.getGroupUserViewList(groupId);
+            views = res.data || [];
+          }
+          m = ids.map(uid => {
+            const v = views.find(vw => vw.userId === uid);
+            return { id: uid, name: v ? v.userName : authService.getUsername() };
+          });
+          setUserIds(ids);
+        } else {
+          setUserIds(m.map(x => x.id));
         }
-        const m = ids.map(uid => {
-          const v = views.find(vw => vw.userId === uid);
-          return { id: uid, name: v ? v.userName : authService.getUsername() };
-        });
         setMembers(m);
-        setUserIds(ids);
         setPercentages(Array(m.length).fill(0));
         setAmounts(Array(m.length).fill(0));
         const meId = Number(authService.getUserId());
-        setPaidBy(ids.includes(meId) ? meId : (ids[0] || null));
+        setPaidBy(m.find(x => x.id === meId) ? meId : (m[0]?.id ?? null));
       } catch (err) {
         console.error('Failed to load group users', err);
       }
