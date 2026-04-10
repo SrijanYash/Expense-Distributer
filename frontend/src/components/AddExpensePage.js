@@ -138,12 +138,24 @@ function AddExpensePage() {
 
           <div className="form-group">
             <label>Paid By</label>
-            <select value={paidBy ?? ''} onChange={e => setPaidBy(Number(e.target.value))} required>
-              <option value='' disabled>Select payer</option>
+            <div role="radiogroup" aria-label="Paid By">
               {members.map(m => (
-                <option key={m.id} value={m.id}>{m.name}</option>
+                <label key={m.id} style={{ display: 'block', marginBottom: 6, cursor: 'pointer' }}>
+                  <input
+                    type="radio"
+                    name="paidBy"
+                    value={m.id}
+                    checked={Number(paidBy) === m.id}
+                    onChange={() => setPaidBy(m.id)}
+                    required
+                  />
+                  <span style={{ marginLeft: 8 }}>{m.name}</span>
+                </label>
               ))}
-            </select>
+              {members.length === 0 && (
+                <div style={{ opacity: 0.7 }}>No members found for this group</div>
+              )}
+            </div>
           </div>
 
           <div className="form-group">
