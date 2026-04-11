@@ -23,7 +23,7 @@ function AddExpensePage() {
       try {
         // Prefer direct member details from user-group-service
         const detRes = await apiService.getGroupMemberDetails(groupId);
-        let m = (detRes.data || []).map(x => ({ id: Number(x.id), name: x.name }));
+        let m = (detRes.data || []).map(x => ({ id: Number(x.id), name: x.name || `User ${x.id}` }));
         // Fallback to legacy path if needed
         if (!m.length) {
           const idsRes = await apiService.getUserIdsInGroup(groupId);
@@ -37,7 +37,7 @@ function AddExpensePage() {
           }
           m = ids.map(uid => {
             const v = views.find(vw => vw.userId === uid);
-            return { id: uid, name: v ? v.userName : authService.getUsername() };
+            return { id: uid, name: v && v.userName ? v.userName : `User ${uid}` };
           });
           setUserIds(ids);
         } else {
@@ -47,7 +47,10 @@ function AddExpensePage() {
         setPercentages(Array(m.length).fill(0));
         setAmounts(Array(m.length).fill(0));
         const meId = Number(authService.getUserId());
-        setPaidBy(m.find(x => x.id === meId) ? meId : (m[0]?.id ?? null));
+        const payerId = m.find(x => x.id === meId) ? meId : (m[0]?.id ?? null);
+        setPaidBy(payerId);
+        // Force re-render to ensure radio button reflects the paidBy state
+        setTimeout(() => {}, 0);
       } catch (err) {
         console.error('Failed to load group users', err);
       }
@@ -148,20 +151,20 @@ function AddExpensePage() {
             <label>Paid By</label>
             <div role="radiogroup" aria-label="Paid By">
               {members.map(m => (
-                <label key={m.id} style={{ display: 'block', marginBottom: 6, cursor: 'pointer' }}>
+                <label key={`paidBy-${m.id}`} style={{ display: 'block', marginBottom: 6, cursor: 'pointer' }}>
                   <input
                     type="radio"
                     name="paidBy"
                     value={m.id}
-                    checked={Number(paidBy) === m.id}
+                    checked={paidBy === m.id}
                     onChange={() => setPaidBy(m.id)}
                     required
                   />
-                  <span style={{ marginLeft: 8 }}>{m.name}</span>
+                  <span style={{ marginLeft: 8 }}>{m.name || `User ${m.id}`}</span>
                 </label>
               ))}
               {members.length === 0 && (
-                <div style={{ opacity: 0.7 }}>No members found for this group</div>
+                <div style={{ opacity: 0.7 }}>Loading members...</div>
               )}
             </div>
           </div>
