@@ -27,22 +27,31 @@ public class GroupController {
 
     // Create a new group
     @PostMapping("/createGroup")
-    @CircuitBreaker(name = "GroupBreaker", fallbackMethod = "createGroupFallback")
+    @CircuitBreaker(name = "groupBreaker", fallbackMethod = "createGroupFallback")
     public ResponseEntity<Group> createGroup(@RequestBody Group group) {
         return ResponseEntity.ok(groupService.createGroup(group));
     }
     public ResponseEntity<Group> createGroupFallback(Group group, Throwable throwable){
-        return ResponseEntity.ok(group);
+        System.out.println("Fallback called for createGroup due to: " + throwable.getMessage());
+        return ResponseEntity.status(503).body(group);
     }
     @PostMapping("/{userId}/UserGroupView/{groupId}")
+    @CircuitBreaker(name = "groupBreaker", fallbackMethod = "createUserGroupViewFallback")
     public ResponseEntity<String> createUserGroupView(@PathVariable int userId, @PathVariable int groupId) {
         return ResponseEntity.ok(groupService.createGroupByUser(userId,groupId));
+    }
+    public ResponseEntity<String> createUserGroupViewFallback(int userId, int groupId, Throwable throwable) {
+        return ResponseEntity.status(503).body("User Group View service unavailable");
     }
 
     // Add users to a group
     @PostMapping("/{groupId}/AddUsers")
+    @CircuitBreaker(name = "groupBreaker", fallbackMethod = "addUsersToGroupFallback")
     public ResponseEntity<Group> addUsersToGroup(@PathVariable("groupId") Integer givenGroupId, @RequestBody List<Integer> givenUserIds){
         return ResponseEntity.ok(groupService.addUsersToGroup(givenGroupId, givenUserIds));
+    }
+    public ResponseEntity<Group> addUsersToGroupFallback(Integer givenGroupId, List<Integer> givenUserIds, Throwable throwable) {
+        return ResponseEntity.status(503).build();
     }
 
     // Remove a user from a group

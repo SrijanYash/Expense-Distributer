@@ -118,9 +118,16 @@ public class UserService {
     public UserInfoDTO getUserInfoById(int id) {
         User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
         if (user != null) {
-            return new UserInfoDTO(user.getName(), user.getPhone(), user.getEmail());
+            return new UserInfoDTO(user.getId(), user.getName(), user.getPhone(), user.getEmail());
         }
         return null;
+    }
+
+    //get user info by ids (batch)
+    public List<UserInfoDTO> getUsersInfoByIds(List<Integer> userIds) {
+        return userRepository.findAllById(userIds).stream()
+            .map(user -> new UserInfoDTO(user.getId(), user.getName(), user.getPhone(), user.getEmail()))
+            .toList();
     }
 
     //authenticate login by name or email and password

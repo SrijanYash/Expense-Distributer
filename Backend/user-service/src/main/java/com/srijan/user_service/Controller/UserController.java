@@ -183,6 +183,18 @@ public class UserController {
         return ResponseEntity.ok(new UserInfoDTO());
     }
 
+    //get user info by ids (batch)
+    @PostMapping("/getUsersInfoByBatch")
+    @CircuitBreaker(name = "userBreaker", fallbackMethod = "getUsersInfoByBatchFallback")
+    public ResponseEntity<List<UserInfoDTO>> getUsersInfoByBatch(@RequestBody List<Integer> userIds) {
+        List<UserInfoDTO> users = userService.getUsersInfoByIds(userIds);
+        return ResponseEntity.ok(users);
+    }
+    public ResponseEntity<List<UserInfoDTO>> getUsersInfoByBatchFallback(List<Integer> userIds, Throwable throwable) {
+        System.out.println("Fallback called for getUsersInfoByBatch due to: " + throwable.getMessage());
+        return ResponseEntity.ok(Collections.emptyList());
+    }
+
     @GetMapping("/{userId}/friends")
     @CircuitBreaker(name = "userBreaker", fallbackMethod = "getAllUsersFallback")
     public ResponseEntity<List<User>> getFriends(@PathVariable int userId) {

@@ -1,0 +1,115 @@
+version: "4.68.0"
+
+services:
+  eureka:
+    image: maven:3.9-eclipse-temurin-21
+    working_dir: /workspace/Backend/eureka-demo
+    volumes:
+      - ./:/workspace
+    command: mvn -q -DskipTests spring-boot:run
+    ports:
+      - "8761:8761"
+
+  zipkin:
+    image: openzipkin/zipkin:2.24
+    ports:
+      - "9411:9411"
+
+  user-service:
+    image: maven:3.9-eclipse-temurin-21
+    working_dir: /workspace/Backend/user-service
+    volumes:
+      - ./:/workspace
+    command: mvn -q -DskipTests spring-boot:run
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require"
+      SPRING_DATASOURCE_USERNAME: "postgres.naviyfnqtkimwjohuabz"
+      SPRING_DATASOURCE_PASSWORD: "benjiro!344"
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
+      SPRING_CLOUD_DISCOVERY_ENABLED: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8761/eureka/"
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+    depends_on:
+      - eureka
+
+  group-service:
+    image: maven:3.9-eclipse-temurin-21
+    working_dir: /workspace/Backend/group-service
+    volumes:
+      - ./:/workspace
+    command: mvn -q -DskipTests spring-boot:run
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require"
+      SPRING_DATASOURCE_USERNAME: "postgres.naviyfnqtkimwjohuabz"
+      SPRING_DATASOURCE_PASSWORD: "benjiro!344"
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
+      SPRING_CLOUD_DISCOVERY_ENABLED: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8761/eureka/"
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+    depends_on:
+      - eureka
+
+  expence-service:
+    image: maven:3.9-eclipse-temurin-21
+    working_dir: /workspace/Backend/expence-service
+    volumes:
+      - ./:/workspace
+    command: mvn -q -DskipTests spring-boot:run
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require"
+      SPRING_DATASOURCE_USERNAME: "postgres.naviyfnqtkimwjohuabz"
+      SPRING_DATASOURCE_PASSWORD: "benjiro!344"
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
+      SPRING_CLOUD_DISCOVERY_ENABLED: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8761/eureka/"
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+    depends_on:
+      - eureka
+
+  user-group-service:
+    image: maven:3.9-eclipse-temurin-21
+    working_dir: /workspace/Backend/user-group-service
+    volumes:
+      - ./:/workspace
+    command: mvn -q -DskipTests spring-boot:run
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require"
+      SPRING_DATASOURCE_USERNAME: "postgres.naviyfnqtkimwjohuabz"
+      SPRING_DATASOURCE_PASSWORD: "benjiro!344"
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
+      SPRING_CLOUD_DISCOVERY_ENABLED: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8761/eureka/"
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+    depends_on:
+      - eureka
+      - user-service
+      - expence-service
+
+  api-service:
+    image: maven:3.9-eclipse-temurin-21
+    working_dir: /workspace/Backend/api-service
+    volumes:
+      - ./:/workspace
+    command: >
+      sh -c "apt-get update && apt-get install -y netcat-openbsd &&
+      chmod +x /workspace/Backend/wait-for-it.sh &&
+      /workspace/Backend/wait-for-it.sh eureka:8761 -t 60 -- mvn -q -DskipTests spring-boot:run"
+    environment:
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
+      SPRING_CLOUD_DISCOVERY_ENABLED: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8761/eureka/"
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+    depends_on:
+      - eureka
+    ports:
+      - "8085:8085"

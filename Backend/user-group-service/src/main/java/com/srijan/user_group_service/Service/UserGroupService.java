@@ -12,6 +12,7 @@ import com.srijan.user_group_service.FeignClient.UserInterface;
 import com.srijan.user_group_service.Model.Expence;
 import com.srijan.user_group_service.Model.ExpenceDTO;
 import com.srijan.user_group_service.Model.Group;
+import com.srijan.user_group_service.Model.MemberDTO;
 import com.srijan.user_group_service.Model.UserExpence;
 import com.srijan.user_group_service.Model.UserGroupView;
 import com.srijan.user_group_service.Model.UserInfoDTO;
@@ -81,6 +82,35 @@ public class UserGroupService {
     
     public List<Expence> getGroupLogs(int groupId) {
         return expenceInterface.getExpenceByGroupId(groupId).getBody();
+    }
+    public List<String> getGroupMemberNames(int groupId) {
+        return groupInterface.getAllUserNameInGroup(groupId).getBody();
+    }
+    public List<MemberDTO> getGroupMemberDetails(int groupId) {
+        Group group = groupInterface.getGroup(groupId).getBody();
+        List<MemberDTO> list = new ArrayList<>();
+        if (group != null) {
+            List<Integer> userIds = group.getUserIds();
+            // Single batch call to get all user info at once
+            List<UserInfoDTO> allUsers = userInterface.getUsersInfoByBatch(userIds).getBody();
+            // Create a map for quick lookup by user ID
+            java.util.Map<Integer, UserInfoDTO> userMap = new java.util.HashMap<>();
+            if (allUsers != null) {
+                for (UserInfoDTO u : allUsers) {
+                    if (u != null && u.getName() != null && u.getId() != null) {
+                        userMap.put(u.getId(), u);
+                    }
+                }
+            }
+            for (Integer id : userIds) {
+                UserInfoDTO u = userMap.get(id);
+                String name = (u != null && u.getName() != null && !u.getName().isBlank())
+                    ? u.getName()
+                    : String.valueOf(id);
+                list.add(new MemberDTO(id, name));
+            }
+        }
+        return list;
     }
 
     public List<Expence> getGroupExpencesByUserId(int groupId, int userId) {
