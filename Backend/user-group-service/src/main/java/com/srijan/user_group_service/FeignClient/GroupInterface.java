@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.srijan.user_group_service.Model.Group;
 
-@FeignClient(name = "GROUP-SERVICE")
+@FeignClient(name = "GROUP-SERVICE", url = "${GROUP_SERVICE_URL:http://localhost:8082}")
 public interface GroupInterface {
 
     @GetMapping("/group/{groupId}/GetGroup")

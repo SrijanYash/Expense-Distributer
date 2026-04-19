@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 // import com.srijan.group_service.Model.Group;
 
-@FeignClient(name="USER-GROUP-SERVICE")
+@FeignClient(name = "USER-GROUP-SERVICE", url = "${USER_GROUP_SERVICE_URL:http://localhost:8084}")
 public interface UserGroupInterface {
 
     @PostMapping("/user-group/{userId}/NewUserGroupView/{groupId}")

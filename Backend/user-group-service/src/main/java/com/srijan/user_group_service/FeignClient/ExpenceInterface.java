@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.srijan.user_group_service.Model.Expence;
 import com.srijan.user_group_service.Model.ExpenceDTO;
 
-@FeignClient(name = "EXPENCE-SERVICE")
+@FeignClient(name = "EXPENCE-SERVICE", url = "${EXPENCE_SERVICE_URL:http://localhost:8083}")
 public interface ExpenceInterface {
 
     @GetMapping("/expence/getExpenceByGroupId")

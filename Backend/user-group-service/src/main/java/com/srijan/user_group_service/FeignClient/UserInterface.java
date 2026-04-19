@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.srijan.user_group_service.Model.UserInfoDTO;
 
-@FeignClient(name = "USER-SERVICE")
+@FeignClient(name = "USER-SERVICE", url = "${USER_SERVICE_URL:http://localhost:8081}")
 public interface UserInterface {
 
     @GetMapping("/user/getUserName/{id}")

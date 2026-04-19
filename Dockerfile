@@ -1,10 +1,7 @@
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /workspace
 
-# Copy all service pom.xml files and source code from Backend folder
-COPY Backend/eureka-demo/pom.xml ./eureka-demo/pom.xml
-COPY Backend/eureka-demo/src ./eureka-demo/src
-
+# Copy only required service pom.xml files and source code (no eureka, no zipkin)
 COPY Backend/api-service/pom.xml ./api-service/pom.xml
 COPY Backend/api-service/src ./api-service/src
 
@@ -21,36 +18,32 @@ COPY Backend/user-group-service/pom.xml ./user-group-service/pom.xml
 COPY Backend/user-group-service/src ./user-group-service/src
 
 # Build all services
-RUN cd eureka-demo && mvn clean package -DskipTests -q && \
-    cd ../api-service && mvn clean package -DskipTests -q && \
+RUN cd api-service && mvn clean package -DskipTests -q && \
     cd ../user-service && mvn clean package -DskipTests -q && \
     cd ../group-service && mvn clean package -DskipTests -q && \
     cd ../expence-service && mvn clean package -DskipTests -q && \
     cd ../user-group-service && mvn clean package -DskipTests -q
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # Copy all built jars
-COPY --from=build /workspace/eureka-demo/target/*.jar ./eureka-demo.jar
 COPY --from=build /workspace/api-service/target/*.jar ./api-service.jar
 COPY --from=build /workspace/user-service/target/*.jar ./user-service.jar
 COPY --from=build /workspace/group-service/target/*.jar ./group-service.jar
 COPY --from=build /workspace/expence-service/target/*.jar ./expence-service.jar
 COPY --from=build /workspace/user-group-service/target/*.jar ./user-group-service.jar
 
-# Expose all service ports
-EXPOSE 8761 8081 8082 8083 8084 8085
+# Copy startup script
+COPY start.sh /app/start.sh
 
-# Install bash for the startup script
-RUN apk add --no-cache bash
+# Expose only API gateway port (all internal services communicate via localhost)
+EXPOSE 8085
 
-# Run all services - eureka first, wait, then others, finally api gateway
-CMD ["sh", "-c", "java -jar eureka-demo.jar & \
-    sleep 15 && \
-    java -jar user-service.jar & \
-    java -jar group-service.jar & \
-    java -jar expence-service.jar & \
-    java -jar user-group-service.jar & \
-    sleep 10 && \
-    java -jar api-service.jar"]
+# Install bash and make script executable
+RUN apt-get update && apt-get install -y --no-install-recommends bash && \
+    chmod +x /app/start.sh && \
+    rm -rf /var/lib/apt/lists/*
+
+# Use startup script
+CMD ["/app/start.sh"]
