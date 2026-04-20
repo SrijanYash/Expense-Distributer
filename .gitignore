@@ -4,3 +4,9 @@ notes.md
 Backend/.env
 
 RAILWAY_README.md
+
+.env.example
+
+.dockerignore
+
+DEPLOYMENT.md
