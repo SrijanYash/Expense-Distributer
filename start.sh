@@ -21,29 +21,36 @@ wait_for_port() {
   echo "$name is ready on port $port"
 }
 
-# Start all backend services in background
+# JVM flags optimized for low-memory containers (512MB free tier)
+# -XX:MaxRAMPercentage: Use max 70% of container memory for heap
+# -XX:InitialRAMPercentage: Start with 25% to reduce initial footprint
+# -XX:+UseSerialGC: Serial GC has lower overhead than G1/Parallel
+# -XX:MaxMetaspaceSize: Limit metaspace to prevent unbounded growth
+JVM_OPTS="-XX:+UseContainerSupport -XX:InitialRAMPercentage=25 -XX:MaxRAMPercentage=70 -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -XX:+ExitOnOutOfMemoryError"
+
+# Start all backend services in background with minimal heap
 echo "Starting user-service on port 8081..."
-java -Xms128m -Xmx256m -jar /app/user-service.jar &
+java $JVM_OPTS -Xms64m -Xmx96m -jar /app/user-service.jar &
 USER_PID=$!
 wait_for_port 8081 "user-service"
 
 echo "Starting group-service on port 8082..."
-java -Xms128m -Xmx256m -jar /app/group-service.jar &
+java $JVM_OPTS -Xms64m -Xmx96m -jar /app/group-service.jar &
 GROUP_PID=$!
 wait_for_port 8082 "group-service"
 
 echo "Starting expence-service on port 8083..."
-java -Xms128m -Xmx256m -jar /app/expence-service.jar &
+java $JVM_OPTS -Xms64m -Xmx96m -jar /app/expence-service.jar &
 EXPENCE_PID=$!
 wait_for_port 8083 "expence-service"
 
 echo "Starting user-group-service on port 8084..."
-java -Xms128m -Xmx256m -jar /app/user-group-service.jar &
+java $JVM_OPTS -Xms64m -Xmx96m -jar /app/user-group-service.jar &
 USERGROUP_PID=$!
 wait_for_port 8084 "user-group-service"
 
 echo "Starting api-service (gateway) on port 8085..."
-java -Xms256m -Xmx512m -jar /app/api-service.jar &
+java $JVM_OPTS -Xms96m -Xmx128m -jar /app/api-service.jar &
 API_PID=$!
 wait_for_port 8085 "api-service"
 
