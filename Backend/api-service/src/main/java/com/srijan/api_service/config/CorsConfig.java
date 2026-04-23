@@ -18,8 +18,10 @@ public class CorsConfig {
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "http://expense-distributer.vercel.app",
-            "https://expense-distributer.vercel.app"
+            "https://expense-distributer.vercel.app",
+            "https://expense-distributer-production.up.railway.app"
         ));
+        corsConfig.setMaxAge(3600L);
         corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         corsConfig.setAllowedHeaders(Arrays.asList("*"));
         corsConfig.setAllowCredentials(true);
