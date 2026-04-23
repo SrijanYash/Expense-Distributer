@@ -24,7 +24,7 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API || 'http://localhost:8085';
+const API_BASE_URL = process.env.REACT_APP_API || 'https://expense-distributer-production.up.railway.app';
 const ALT_API_BASE_URL = process.env.REACT_APP_API_ALT || 'http://localhost:8095';
 
 // Create axios instances for different services
