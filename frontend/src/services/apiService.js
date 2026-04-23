@@ -47,42 +47,42 @@ const userGroupService = axios.create({
 // API service methods
 const apiService = {
   // Authentication endpoints
-  login: (username) => userService.get(`/getUserByName/${username}`),
-  logout: () => userService.post('/logout'),
+  login: (username) => userService.get(`getUserByName/${username}`),
+  logout: () => userService.post('logout'),
   
   // User endpoints
-  getUsers: () => userService.get('/allUsers'),
-  getUserById: (id) => userService.get(`/getUserById/${id}`),
-  addUser: (userData) => userService.post('/register', userData),
-  registerUser: (userData) => userService.post('/register', userData),
+  getUsers: () => userService.get('allUsers'),
+  getUserById: (id) => userService.get(`getUserById/${id}`),
+  addUser: (userData) => userService.post('register', userData),
+  registerUser: (userData) => userService.post('register', userData),
 
   // Friends endpoints
-  getFriends: (userId) => userService.get(`/${userId}/friends`),
-  addFriend: (userId, data) => userService.post(`/${userId}/friends`, data),
-  inviteFriend: (userId, data) => userService.post(`/${userId}/friends/invite`, data),
+  getFriends: (userId) => userService.get(`${userId}/friends`),
+  addFriend: (userId, data) => userService.post(`${userId}/friends`, data),
+  inviteFriend: (userId, data) => userService.post(`${userId}/friends/invite`, data),
   
   // Group endpoints
-  getGroups: () => groupService.get('/getGroups'),
-  getGroupById: (id) => groupService.get(`/${id}/GetGroup`),
-  addGroup: (groupData) => groupService.post('/createGroup', groupData),
-  createGroup: (groupData) => groupService.post('/createGroup', groupData),
-  getUserIdsInGroup: (groupId) => groupService.get(`/${groupId}/ListOfUsers`),
+  getGroups: () => groupService.get('getGroups'),
+  getGroupById: (id) => groupService.get(`${id}/GetGroup`),
+  addGroup: (groupData) => groupService.post('createGroup', groupData),
+  createGroup: (groupData) => groupService.post('createGroup', groupData),
+  getUserIdsInGroup: (groupId) => groupService.get(`${groupId}/ListOfUsers`),
   
   // Expense endpoints
-  getExpenseById: (id) => expenseService.get(`/getExpence/${id}`),
-  getExpensesByGroupId: (groupId) => expenseService.get(`/getExpenceByGroupId/${groupId}`),
-  getExpensesByDescription: (description) => expenseService.get(`/getExpenceByDescription/${description}`),
-  addExpense: (expenseData, splitType) => expenseService.post(`/addExpence/${splitType}`, expenseData),
-  addExpenses: (expensesData) => expenseService.post('/addListOfExpence', expensesData),
-  updateExpense: (id, expenseData) => expenseService.put(`/updateExpence/${id}`, expenseData),
+  getExpenseById: (id) => expenseService.get(`getExpence/${id}`),
+  getExpensesByGroupId: (groupId) => expenseService.get(`getExpenceByGroupId/${groupId}`),
+  getExpensesByDescription: (description) => expenseService.get(`getExpenceByDescription/${description}`),
+  addExpense: (expenseData, splitType) => expenseService.post(`addExpence/${splitType}`, expenseData),
+  addExpenses: (expensesData) => expenseService.post('addListOfExpence', expensesData),
+  updateExpense: (id, expenseData) => expenseService.put(`updateExpence/${id}`, expenseData),
   
   // User-Group endpoints
-  getUserGroupView: (userId, groupId) => userGroupService.get(`/userId-${userId}/groupId-${groupId}`),
-  getGroupUserViewList: (groupId) => userGroupService.get(`/groupId-${groupId}/getGroupUserView`),
-  createUserGroupViews: (groupId, userIds) => userGroupService.post(`/${groupId}/NewUserGroupViews`, userIds),
+  getUserGroupView: (userId, groupId) => userGroupService.get(`userId-${userId}/groupId-${groupId}`),
+  getGroupUserViewList: (groupId) => userGroupService.get(`groupId-${groupId}/getGroupUserView`),
+  createUserGroupViews: (groupId, userIds) => userGroupService.post(`${groupId}/NewUserGroupViews`, userIds),
   getGroupMemberDetails: async (groupId) => {
     try {
-      return await userGroupService.get(`/${groupId}/MemberDetails`);
+      return await userGroupService.get(`${groupId}/MemberDetails`);
     } catch (err) {
       try {
         return await axios.get(`${ALT_API_BASE_URL}/user-group/${groupId}/MemberDetails`);
@@ -91,7 +91,7 @@ const apiService = {
       }
     }
   },
-  getUserGroups: (userId) => groupService.get(`/User/${userId}/Groups`),
+  getUserGroups: (userId) => groupService.get(`User/${userId}/Groups`),
   
   // Mock endpoints for demonstration (would be replaced with actual endpoints)
   getUserExpenses: (userId) => {

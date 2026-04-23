@@ -50,10 +50,10 @@ java $JVM_OPTS -Xms64m -Xmx96m -Dserver.port=8084 -jar /app/user-group-service.j
 USERGROUP_PID=$!
 wait_for_port 8084 "user-group-service"
 
-echo "Starting api-service (gateway) on port 8085..."
-java $JVM_OPTS -Xms96m -Xmx128m -Dserver.port=8085 -jar /app/api-service.jar &
+echo "Starting api-service (gateway) on port ${PORT:-8085}..."
+java $JVM_OPTS -Xms96m -Xmx128m -Dserver.port=${PORT:-8085} -jar /app/api-service.jar &
 API_PID=$!
-wait_for_port 8085 "api-service"
+wait_for_port ${PORT:-8085} "api-service"
 
 echo ""
 echo "=== All services started ==="
