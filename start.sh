@@ -22,11 +22,12 @@ wait_for_port() {
 }
 
 # JVM flags optimized for low-memory containers (512MB free tier)
+# -Djava.net.preferIPv4Stack=true: Force IPv4 to avoid IPv6 localhost issues
 # -XX:MaxRAMPercentage: Use max 70% of container memory for heap
 # -XX:InitialRAMPercentage: Start with 25% to reduce initial footprint
 # -XX:+UseSerialGC: Serial GC has lower overhead than G1/Parallel
 # -XX:MaxMetaspaceSize: Limit metaspace to prevent unbounded growth
-JVM_OPTS="-XX:+UseContainerSupport -XX:InitialRAMPercentage=25 -XX:MaxRAMPercentage=70 -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -XX:+ExitOnOutOfMemoryError"
+JVM_OPTS="-Djava.net.preferIPv4Stack=true -XX:+UseContainerSupport -XX:InitialRAMPercentage=25 -XX:MaxRAMPercentage=70 -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -XX:+ExitOnOutOfMemoryError"
 
 # Start all backend services in background with minimal heap
 # Note: Explicitly set -Dserver.port to override any SERVER_PORT env var from cloud provider
