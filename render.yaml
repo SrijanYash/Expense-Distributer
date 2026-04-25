@@ -1,0 +1,107 @@
+services:
+  # User Service
+  - type: web
+    name: user-service
+    env: docker
+    region: singapore
+    plan: starter
+    dockerfilePath: Backend/user-service/Dockerfile
+    dockerContext: .
+    envVars:
+      - key: PORT
+        value: 8081
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: EUREKA_ZIPKIN_ENABLED
+        value: "false"
+    healthCheckPath: /actuator/health
+
+  # Group Service
+  - type: web
+    name: group-service
+    env: docker
+    region: singapore
+    plan: starter
+    dockerfilePath: Backend/group-service/Dockerfile
+    dockerContext: .
+    envVars:
+      - key: PORT
+        value: 8082
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: EUREKA_ZIPKIN_ENABLED
+        value: "false"
+    healthCheckPath: /actuator/health
+
+  # Expence Service
+  - type: web
+    name: expence-service
+    env: docker
+    region: singapore
+    plan: starter
+    dockerfilePath: Backend/expence-service/Dockerfile
+    dockerContext: .
+    envVars:
+      - key: PORT
+        value: 8083
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: EUREKA_ZIPKIN_ENABLED
+        value: "false"
+    healthCheckPath: /actuator/health
+
+  # User-Group Service
+  - type: web
+    name: user-group-service
+    env: docker
+    region: singapore
+    plan: starter
+    dockerfilePath: Backend/user-group-service/Dockerfile
+    dockerContext: .
+    envVars:
+      - key: PORT
+        value: 8084
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: EUREKA_ZIPKIN_ENABLED
+        value: "false"
+    healthCheckPath: /actuator/health
+
+  # API Gateway (main entry point)
+  - type: web
+    name: api-service
+    env: docker
+    region: singapore
+    plan: starter
+    dockerfilePath: Backend/api-service/Dockerfile
+    dockerContext: .
+    envVars:
+      - key: PORT
+        value: 8085
+      - key: EUREKA_ZIPKIN_ENABLED
+        value: "false"
+      - key: USER_SERVICE_URL
+        value: http://user-service:8081
+      - key: GROUP_SERVICE_URL
+        value: http://group-service:8082
+      - key: EXPENCE_SERVICE_URL
+        value: http://expence-service:8083
+      - key: USER_GROUP_SERVICE_URL
+        value: http://user-group-service:8084
+    healthCheckPath: /actuator/health

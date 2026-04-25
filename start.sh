@@ -29,31 +29,39 @@ wait_for_port() {
 # -XX:MaxMetaspaceSize: Limit metaspace to prevent unbounded growth
 JVM_OPTS="-Djava.net.preferIPv4Stack=true -XX:+UseContainerSupport -XX:MaxRAM=128m -XX:InitialRAMPercentage=15 -XX:MaxRAMPercentage=25 -XX:+UseSerialGC -XX:MaxMetaspaceSize=64m -XX:CompressedClassSpaceSize=32m -XX:+ExitOnOutOfMemoryError"
 
-# Function to start a service with auto-restart
-start_service() {
-  local name=$1
+# Start services with auto-restart wrapper
+start_with_restart() {
+  local jar_name=$1
   local port=$2
   local heap=$3
-  local jar_name=$4
 
-  echo "Starting $name on port $port..."
-  (
-    while true; do
-      java $JVM_OPTS -Xms${heap}m -Xmx$((heap*2))m -Dserver.port=$port -jar /app/$jar_name.jar
-      echo "$name exited. Restarting in 5s..." >&2
-      sleep 5
-    done
-  ) &
-  eval "${name^^}_PID=$!"
-  wait_for_port $port "$name"
-  echo "$name started (PID ${!name^^_PID})"
+  while true; do
+    java $JVM_OPTS -Xms${heap}m -Xmx$((heap*2))m -Dserver.port=$port -jar /app/$jar_name.jar
+    echo "$(date): $jar_name exited. Restarting in 5s..."
+    sleep 5
+  done
 }
 
-# Start all backend services with auto-restart
-start_service "user" 8081 16 "user-service"
-start_service "group" 8082 16 "group-service"
-start_service "expence" 8083 16 "expence-service"
-start_service "usergroup" 8084 16 "user-group-service"
+# Start all backend services with auto-restart in background
+echo "Starting user-service on port 8081..."
+start_with_restart "user-service" 8081 16 &
+USER_PID=$!
+wait_for_port 8081 "user-service"
+
+echo "Starting group-service on port 8082..."
+start_with_restart "group-service" 8082 16 &
+GROUP_PID=$!
+wait_for_port 8082 "group-service"
+
+echo "Starting expence-service on port 8083..."
+start_with_restart "expence-service" 8083 16 &
+EXPENCE_PID=$!
+wait_for_port 8083 "expence-service"
+
+echo "Starting user-group-service on port 8084..."
+start_with_restart "user-group-service" 8084 16 &
+USERGROUP_PID=$!
+wait_for_port 8084 "user-group-service"
 
 echo "Starting api-service (gateway) on port ${PORT:-8085}..."
 java $JVM_OPTS -Xms32m -Xmx64m -Dserver.port=${PORT:-8085} -jar /app/api-service.jar &
@@ -66,13 +74,5 @@ echo "PIDs: user=$USER_PID, group=$GROUP_PID, expence=$EXPENCE_PID, usergroup=$U
 echo "API Gateway available on port 8085"
 echo ""
 
-# Wait for any process to exit (POSIX-compatible)
-wait -n 2>/dev/null || {
-  # Fallback for shells without wait -n: wait for all processes
-  wait $USER_PID 2>/dev/null || wait $GROUP_PID 2>/dev/null || wait $EXPENCE_PID 2>/dev/null || wait $USERGROUP_PID 2>/dev/null || wait $API_PID 2>/dev/null
-}
-
-# If we reach here, one service exited
-echo "A service exited. Stopping all services..."
-kill $USER_PID $GROUP_PID $EXPENCE_PID $USERGROUP_PID $API_PID 2>/dev/null
-exit 1
+# Keep running - if any service exits, restart it (shouldn't happen due to while loops above)
+wait
