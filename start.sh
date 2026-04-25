@@ -27,32 +27,32 @@ wait_for_port() {
 # -XX:InitialRAMPercentage: Start with 25% to reduce initial footprint
 # -XX:+UseSerialGC: Serial GC has lower overhead than G1/Parallel
 # -XX:MaxMetaspaceSize: Limit metaspace to prevent unbounded growth
-JVM_OPTS="-Djava.net.preferIPv4Stack=true -XX:+UseContainerSupport -XX:InitialRAMPercentage=25 -XX:MaxRAMPercentage=70 -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -XX:+ExitOnOutOfMemoryError"
+JVM_OPTS="-Djava.net.preferIPv4Stack=true -XX:+UseContainerSupport -XX:MaxRAM=128m -XX:InitialRAMPercentage=15 -XX:MaxRAMPercentage=25 -XX:+UseSerialGC -XX:MaxMetaspaceSize=64m -XX:CompressedClassSpaceSize=32m -XX:+ExitOnOutOfMemoryError"
 
 # Start all backend services in background with minimal heap
 # Note: Explicitly set -Dserver.port to override any SERVER_PORT env var from cloud provider
 echo "Starting user-service on port 8081..."
-java $JVM_OPTS -Xms32m -Xmx64m -Dserver.port=8081 -jar /app/user-service.jar &
+java $JVM_OPTS -Xms16m -Xmx32m -Dserver.port=8081 -jar /app/user-service.jar &
 USER_PID=$!
 wait_for_port 8081 "user-service"
 
 echo "Starting group-service on port 8082..."
-java $JVM_OPTS -Xms32m -Xmx64m -Dserver.port=8082 -jar /app/group-service.jar &
+java $JVM_OPTS -Xms16m -Xmx32m -Dserver.port=8082 -jar /app/group-service.jar &
 GROUP_PID=$!
 wait_for_port 8082 "group-service"
 
 echo "Starting expence-service on port 8083..."
-java $JVM_OPTS -Xms32m -Xmx64m -Dserver.port=8083 -jar /app/expence-service.jar &
+java $JVM_OPTS -Xms16m -Xmx32m -Dserver.port=8083 -jar /app/expence-service.jar &
 EXPENCE_PID=$!
 wait_for_port 8083 "expence-service"
 
 echo "Starting user-group-service on port 8084..."
-java $JVM_OPTS -Xms32m -Xmx64m -Dserver.port=8084 -jar /app/user-group-service.jar &
+java $JVM_OPTS -Xms16m -Xmx32m -Dserver.port=8084 -jar /app/user-group-service.jar &
 USERGROUP_PID=$!
 wait_for_port 8084 "user-group-service"
 
 echo "Starting api-service (gateway) on port ${PORT:-8085}..."
-java $JVM_OPTS -Xms64m -Xmx96m -Dserver.port=${PORT:-8085} -jar /app/api-service.jar &
+java $JVM_OPTS -Xms32m -Xmx64m -Dserver.port=${PORT:-8085} -jar /app/api-service.jar &
 API_PID=$!
 wait_for_port ${PORT:-8085} "api-service"
 
