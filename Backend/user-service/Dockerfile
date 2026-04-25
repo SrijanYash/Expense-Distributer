@@ -15,4 +15,4 @@ ENV PORT=8081
 ENV SERVER_PORT=${PORT}
 ENV EUREKA_ZIPKIN_ENABLED=false
 
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-XX:InitialRAMPercentage=50.0", "-XX:+UseSerialGC", "-XX:MaxMetaspaceSize=64m", "-jar", "./user-service.jar"]
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-XX:InitialRAMPercentage=50.0", "-XX:+UseSerialGC", "-XX:MaxMetaspaceSize=256m", "-jar", "./user-service.jar"]

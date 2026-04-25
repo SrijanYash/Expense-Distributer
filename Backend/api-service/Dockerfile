@@ -18,4 +18,4 @@ ENV GROUP_SERVICE_URL=http://group-service:8082
 ENV EXPENCE_SERVICE_URL=http://expence-service:8083
 ENV USER_GROUP_SERVICE_URL=http://user-group-service:8084
 
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-XX:InitialRAMPercentage=50.0", "-XX:+UseSerialGC", "-XX:MaxMetaspaceSize=64m", "-jar", "./api-service.jar"]
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-XX:InitialRAMPercentage=50.0", "-XX:+UseSerialGC", "-XX:MaxMetaspaceSize=256m", "-jar", "./api-service.jar"]

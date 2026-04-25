@@ -14,4 +14,4 @@ EXPOSE 8084
 ENV PORT=8084
 ENV EUREKA_ZIPKIN_ENABLED=false
 
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-XX:InitialRAMPercentage=50.0", "-XX:+UseSerialGC", "-XX:MaxMetaspaceSize=64m", "-jar", "./user-group-service.jar"]
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-XX:InitialRAMPercentage=50.0", "-XX:+UseSerialGC", "-XX:MaxMetaspaceSize=256m", "-jar", "./user-group-service.jar"]
